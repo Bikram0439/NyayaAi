@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Generated FAISS database (include only if you don't want to upload it)
+faiss_db/
+
+# Temporary files
+*.log
+.DS_Store
+
+Data/
