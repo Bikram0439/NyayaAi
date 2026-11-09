@@ -1,37 +1,36 @@
 # ⚖️ NyayaAI – Indian Legal Research Assistant
 
-**An AI-powered legal document retrieval and question-answering system for the Indian judicial system.**
+**An AI-powered legal document retrieval and question-answering system for the Indian judicial system using Retrieval-Augmented Generation (RAG).**
 
-NyayaAI is a Retrieval-Augmented Generation (RAG) based legal research assistant designed to help users search legal documents and obtain answers to legal questions using an AI-powered conversational interface.
+NyayaAI is a RAG-based legal research assistant that allows users to ask natural-language questions about Indian legal documents and receive contextual answers grounded in a curated PDF knowledge base.
 
-The system uses PDF document processing, semantic embeddings, FAISS vector search, and Google's Gemini API to retrieve relevant legal information and generate natural-language responses.
+The system combines PDF processing, semantic embeddings, FAISS vector search, and a locally hosted **Llama 3.2 model through Ollama** to retrieve relevant legal information and generate responses.
 
-It also supports general knowledge questions when relevant information is not found in the legal document database.
+It also supports general-knowledge questions when sufficient information is not available in the legal document database.
 
 ---
 
 ## 📑 Table of Contents
 
-1. [Project Overview](#-project-overview)
-2. [Problem Statement](#-problem-statement)
-3. [Project Objectives](#-project-objectives)
-4. [Key Features](#-key-features)
-5. [Technology Stack](#-technology-stack)
-6. [System Architecture](#-system-architecture)
-7. [Project Workflow](#-project-workflow)
-8. [Project Structure](#-project-structure)
-9. [Technology Explanation](#-technology-explanation)
-10. [Installation and Setup](#-installation-and-setup)
-11. [Gemini API Configuration](#-gemini-api-configuration)
-12. [Running the Application](#-running-the-application)
-13. [Example Questions](#-example-questions)
-14. [Retrieval Evaluation](#-retrieval-evaluation)
-15. [Screenshots](#-screenshots)
-16. [Limitations](#-limitations)
-17. [Future Improvements](#-future-improvements)
-18. [Research and Academic Contribution](#-research-and-academic-contribution)
-19. [Disclaimer](#-disclaimer)
-20. [Author](#-author)
+1. Project Overview
+2. Problem Statement
+3. Project Objectives
+4. Key Features
+5. Technology Stack
+6. System Architecture
+7. Project Workflow
+8. Project Structure
+9. Installation and Setup
+10. Ollama Configuration
+11. Running the Application
+12. Example Questions
+13. Retrieval Evaluation
+14. Screenshots
+15. Limitations
+16. Future Improvements
+17. Research and Academic Contribution
+18. Disclaimer
+19. Author
 
 ---
 
@@ -43,21 +42,21 @@ Traditional keyword-based searches may fail to identify documents that are seman
 
 NyayaAI addresses this challenge through semantic search and Retrieval-Augmented Generation.
 
-Users can ask questions in natural language. The application searches its legal document database, retrieves relevant text chunks, and uses a Large Language Model (LLM) to generate a contextual response.
+Users can ask questions in natural language. The application searches its legal document database, retrieves relevant text chunks, and uses a locally hosted Large Language Model (LLM) to generate contextual responses.
 
-The project initially focuses on legal documents related to Bihar, including documents from district courts, the Patna High Court, and digital legal repositories.
+The current project focuses on legal documents related to Bihar, including documents from district courts, the Patna High Court, and digital legal repositories.
 
 ### Main Idea
 
-Instead of asking an LLM to answer every question using only its pretrained knowledge, NyayaAI first attempts to retrieve relevant information from its legal document collection.
+Instead of relying entirely on an LLM's pretrained knowledge, NyayaAI first attempts to retrieve relevant information from its legal document collection.
 
-This helps connect generated answers with the actual documents available in the knowledge base.
+The retrieved passages are supplied as context to the LLM to generate document-grounded answers.
 
 ---
 
 ## 🎯 Problem Statement
 
-Legal information is often distributed across large collections of PDF documents, court judgments, acts, rules, and other legal publications.
+Legal information is distributed across large collections of PDF documents, court judgments, acts, rules, and other legal publications.
 
 Users may face several challenges:
 
@@ -73,17 +72,15 @@ NyayaAI aims to simplify legal document discovery by combining semantic document
 
 ## 🎯 Project Objectives
 
-The primary objectives are:
-
 1. Develop a searchable knowledge base of Indian judicial and legal documents.
 2. Extract text from legal PDF documents.
-3. Divide lengthy documents into smaller, meaningful chunks.
+3. Divide lengthy documents into smaller chunks.
 4. Generate semantic embeddings for document chunks.
 5. Store embeddings in a FAISS vector database.
 6. Retrieve relevant legal information using semantic similarity search.
-7. Generate contextual answers using Google's Gemini API.
-8. Provide a general knowledge fallback when relevant documents are unavailable.
-9. Develop an interactive web interface using Streamlit.
+7. Generate contextual answers using Llama 3.2 through Ollama.
+8. Provide a general-knowledge fallback when relevant documents are unavailable.
+9. Develop an interactive interface using Streamlit.
 10. Evaluate the quality of document retrieval.
 
 ---
@@ -97,10 +94,11 @@ The primary objectives are:
 | Semantic Embeddings | Converts text into numerical vector representations. |
 | FAISS Search | Performs similarity-based document retrieval. |
 | RAG Pipeline | Uses retrieved legal information as context for answer generation. |
-| Gemini Integration | Generates natural-language answers using Gemini. |
+| Ollama Integration | Generates answers using a locally hosted Llama 3.2 model. |
 | General Knowledge Fallback | Supports questions outside the available legal knowledge base. |
 | Interactive Interface | Provides a conversational interface through Streamlit. |
 | Source Information | Displays retrieved document information where available. |
+| Local Inference | Avoids external LLM API calls during inference. |
 
 ---
 
@@ -110,20 +108,19 @@ The primary objectives are:
 |---|---|
 | Python | Main programming language |
 | Streamlit | Web application interface |
-| LangChain | Document loading, chunking, and vector-store integration |
+| LangChain | Document processing and vector-store integration |
 | PyPDFLoader | PDF document loading |
 | RecursiveCharacterTextSplitter | Text chunking |
 | HuggingFace Sentence Transformers | Semantic embedding generation |
 | all-MiniLM-L6-v2 | Embedding model |
 | FAISS | Vector similarity search |
-| Google Gemini API | Large Language Model for response generation |
-| python-dotenv | Environment variable management |
+| Ollama | Local LLM runtime |
+| Llama 3.2 | Language model for answer generation |
+| langchain-ollama | LangChain integration with Ollama |
 
 ---
 
 ## 🏗️ System Architecture
-
-The following diagram illustrates the intended document ingestion and question-answering architecture.
 
 ### 1. Document Ingestion Pipeline
 
@@ -147,14 +144,14 @@ flowchart TD
     B --> C[FAISS Similarity Search]
     C --> D[Retrieve Top-K Chunks]
     D --> E[Relevance Checking]
-    E --> F{Relevant Documents Found?}
+    E --> F{Sufficiently Relevant?}
 
     F -->|Yes| G[Construct Legal Context]
-    G --> H[Gemini API]
-    H --> I[Context-Based Answer]
+    G --> H[Ollama - Llama 3.2]
+    H --> I[Context-Grounded Answer]
 
     F -->|No| J[General Knowledge Prompt]
-    J --> K[Gemini API]
+    J --> K[Ollama - Llama 3.2]
     K --> L[General Answer]
 
     I --> M[Streamlit Interface]
@@ -169,148 +166,82 @@ flowchart TD
 
 The project uses PDF documents related to the Indian judicial system.
 
-The current collection includes categories such as:
+The current collection includes:
 
 - Bihar District Courts.
 - Patna High Court.
 - Digital Repository.
 - Acts and other legal documents.
 
-The documents are stored inside the `Data/` directory.
+Documents are stored inside the `Data/` directory.
 
 ### Step 2: PDF Loading
 
-The system uses LangChain's `PyPDFLoader` to load PDF documents and extract their textual content.
-
-Example:
-
-```python
-from langchain_community.document_loaders import PyPDFLoader
-
-loader = PyPDFLoader("./Data/example.pdf")
-
-documents = loader.load()
-
-print("Total pages:", len(documents))
-```
-
-Each loaded page is represented as a document containing text and metadata.
+The system uses LangChain's `PyPDFLoader` to extract textual content from PDF documents.
 
 ### Step 3: Text Chunking
 
-Long legal documents are divided into smaller text chunks.
+Long legal documents are divided into smaller text chunks using `RecursiveCharacterTextSplitter`.
 
-The project uses `RecursiveCharacterTextSplitter`.
+Current configuration:
 
-Example:
-
-```python
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200
-)
-
-texts = text_splitter.split_documents(documents)
-
-print("Total chunks:", len(texts))
-```
-
-**Chunk size:** 1000 characters.
-
-**Chunk overlap:** 200 characters.
+- Chunk size: 1000 characters.
+- Chunk overlap: 200 characters.
 
 Chunk overlap helps preserve contextual continuity between adjacent chunks.
 
 ### Step 4: Embedding Generation
 
-The text chunks are converted into numerical vector representations using HuggingFace embeddings.
-
-Embedding model:
+Text chunks are converted into numerical vector representations using:
 
 `sentence-transformers/all-MiniLM-L6-v2`
 
-Example:
-
-```python
-from langchain_huggingface import HuggingFaceEmbeddings
-
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
-```
-
-These embeddings represent the semantic meaning of the text and enable similarity-based retrieval.
+The embedding model produces 384-dimensional vectors for semantic similarity search.
 
 ### Step 5: FAISS Vector Database
 
-FAISS is used to store and search the generated embeddings.
+FAISS stores and searches the generated embeddings.
 
-Example:
-
-```python
-from langchain_community.vectorstores import FAISS
-
-vectorstore = FAISS.from_documents(
-    texts,
-    embeddings
-)
-
-vectorstore.save_local("faiss_db")
-```
-
-The persisted vector database can be loaded later without repeating the complete ingestion process.
+The vector database is persisted locally so that the complete ingestion pipeline does not need to run for every application session.
 
 ### Step 6: Similarity Search
 
-When a user asks a question, the system searches the FAISS database for semantically similar document chunks.
+When a user asks a question, the system searches the FAISS database and retrieves the top-k matching chunks.
 
-Example:
+The current default retrieval value is:
 
-```python
-results = vectorstore.similarity_search_with_score(
-    question,
-    k=3
-)
-```
+`k = 5`
 
-The system retrieves the top three matching chunks in this example.
-
-The retrieved distances are used by the current implementation for relevance checking.
-
-**Note:** The relevance threshold is an experimental setting and should be calibrated through evaluation rather than treated as a universal value.
+Retrieved scores are used by the relevance-checking logic.
 
 ### Step 7: Relevance Checking
 
-The system checks whether the retrieved documents are sufficiently relevant to the user's question.
+The system evaluates whether retrieved chunks pass the configured relevance threshold.
 
-Two possible paths follow:
+Two paths are possible:
 
-- Relevant legal documents are found: construct a context-based prompt.
-- Relevant legal documents are not found: use a general knowledge prompt.
+- Relevant legal information is found: construct a context-based RAG prompt.
+- Relevant legal information is insufficient: use a general-knowledge prompt.
 
-This avoids treating every FAISS retrieval result as automatically sufficient evidence.
+The threshold is an experimental setting and should be calibrated using the evaluation dataset.
 
-### Step 8: Gemini Response Generation
+### Step 8: Local LLM Response Generation
 
-The Google Gemini API receives the appropriate prompt.
+The system uses **Ollama with Llama 3.2** to generate natural-language answers.
 
-For the RAG path, the prompt contains the user question and retrieved legal context.
+For RAG, the prompt contains the user's question and retrieved legal context.
 
-For the fallback path, the prompt requests a general answer without claiming that it has been verified against the legal database.
+For fallback, the prompt requests a general answer without claiming that it has been verified against the legal database.
 
 ### Step 9: Display the Answer
 
 Streamlit provides the conversational interface.
 
-The application displays the generated answer and, where available, information about retrieved documents.
+The application displays generated answers and, for RAG-grounded responses, information about retrieved documents.
 
 ---
 
 ## 📁 Project Structure
-
-The following structure represents the project organization discussed during development.
 
 ```text
 Final_year_Project/
@@ -324,32 +255,29 @@ Final_year_Project/
 ├── faiss_db/
 │   └── FAISS index files
 │
-├── __pycache__/
-│
 ├── app.py
 ├── Chunking.py
-├── Embedding.py
+├── Embeding.py
 ├── Database.py
 ├── Retrieval.py
 ├── EvaluateRetrieval.py
-│
-├── test_gemini.py
-├── .env
+├── test.py
 ├── .gitignore
-└── README.md
+├── README.md
+└── requirements.txt
 ```
 
 ### File Descriptions
 
 | File | Responsibility |
 |---|---|
-| `app.py` | Streamlit application and Gemini-powered question answering. |
-| `Chunking.py` | PDF text chunking logic. |
-| `Embedding.py` | Embedding generation. |
+| `app.py` | Streamlit application and user interface. |
+| `Chunking.py` | PDF loading and text chunking. |
+| `Embeding.py` | Embedding generation. |
 | `Database.py` | FAISS vector database creation and persistence. |
-| `Retrieval.py` | Document retrieval operations. |
+| `Retrieval.py` | Document retrieval, relevance checking and LLM integration. |
 | `EvaluateRetrieval.py` | Retrieval evaluation experiments. |
-| `test_gemini.py` | Gemini API connectivity testing. |
+| `test.py` | Project testing utilities. |
 | `Data/` | Legal PDF document collection. |
 | `faiss_db/` | Persisted FAISS vector database. |
 
@@ -366,8 +294,8 @@ Install the following:
 - Python 3.10 or later.
 - Visual Studio Code.
 - Git.
-- Internet connection.
-- Google Gemini API key.
+- Ollama.
+- An internet connection for downloading dependencies, the embedding model and the LLM.
 
 ### Step 1: Clone the Repository
 
@@ -397,110 +325,93 @@ For Windows PowerShell:
 .\venv\Scripts\Activate.ps1
 ```
 
-If PowerShell blocks script execution, use an appropriate execution policy for your environment or activate the environment through Command Prompt:
-
-```cmd
-venv\Scripts\activate.bat
-```
-
 ### Step 4: Install Dependencies
-
-Install the core dependencies:
 
 ```bash
 pip install streamlit
 pip install langchain-community
 pip install langchain-text-splitters
 pip install langchain-huggingface
+pip install langchain-ollama
 pip install sentence-transformers
 pip install faiss-cpu
 pip install pypdf
-pip install google-genai
-pip install python-dotenv
 ```
 
-Depending on the imports in the remaining source files, additional packages may be necessary.
-
-### Step 5: Configure Environment Variables
-
-Create a `.env` file in the project root.
-
-```env
-GEMINI_API_KEY=your_gemini_api_key
-```
-
-Do not upload this file to GitHub.
+Install any additional dependencies required by your source files.
 
 ---
 
-## 🔑 Gemini API Configuration
+## 🦙 Ollama Configuration
 
-NyayaAI uses Google's Gemini API for natural-language answer generation.
+NyayaAI uses Ollama to run the Llama 3.2 model locally.
 
-To obtain an API key:
+Unlike cloud-based LLM APIs, Ollama allows the application to perform inference using a locally hosted model.
 
-1. Visit [Google AI Studio](https://aistudio.google.com/).
-2. Sign in with your Google account.
-3. Open the API Keys section.
-4. Generate an API key.
-5. Store the key in your local `.env` file.
+### Step 1: Install Ollama
 
-Example Python integration:
+Download and install Ollama:
+
+https://ollama.com/download
+
+### Step 2: Download Llama 3.2
+
+Open PowerShell or Command Prompt and run:
+
+```bash
+ollama pull llama3.2
+```
+
+This downloads the model to your local machine.
+
+### Step 3: Verify the Installation
+
+Run:
+
+```bash
+ollama list
+```
+
+You should see the downloaded `llama3.2` model.
+
+You can also test the model:
+
+```bash
+ollama run llama3.2
+```
+
+### Step 4: Start the Ollama Service
+
+Ensure the Ollama service is running locally.
+
+The default local endpoint is:
+
+```text
+http://localhost:11434
+```
+
+### Step 5: LangChain Integration
+
+NyayaAI uses `ChatOllama` to communicate with the locally hosted model.
+
+Example:
 
 ```python
-from dotenv import load_dotenv
-from google import genai
-import os
+from langchain_ollama import ChatOllama
 
-load_dotenv()
-
-api_key = os.getenv("GEMINI_API_KEY")
-
-client = genai.Client(api_key=api_key)
+llm = ChatOllama(
+    model="llama3.2",
+    temperature=0
+)
 ```
 
-The application currently uses the model configured in `app.py`. Check that file for the exact model identifier before running.
-
-### Security Recommendations
-
-Never commit the following to a public repository:
-
-- `.env`
-- API keys.
-- Credentials.
-- Private legal documents.
-- Sensitive user data.
-
-A recommended `.gitignore`:
-
-```gitignore
-# Environment variables
-.env
-
-# Virtual environment
-venv/
-.venv/
-
-# Python cache
-__pycache__/
-*.pyc
-
-# IDE settings
-.vscode/
-
-# Temporary files
-*.log
-
-# Local test outputs
-```
-
-Only publish the FAISS database and legal documents if you have permission to redistribute them.
+No Gemini API key or cloud LLM API key is required for this integration.
 
 ---
 
 ## ▶️ Running the Application
 
-After installing dependencies and configuring the Gemini API key, run:
+After installing the dependencies and downloading the required Ollama model, run:
 
 ```bash
 python -m streamlit run app.py
@@ -514,26 +425,23 @@ Open the URL displayed in your terminal, normally:
 http://localhost:8501
 ```
 
-You should see the NyayaAI interface.
+You should now see the NyayaAI interface.
 
 ### Application Interface
 
-The interface contains:
+The application provides:
 
 - NyayaAI title and description.
-- Legal PDF knowledge-base information.
-- FAISS retrieval information.
-- Gemini model information.
-- Chat input.
-- Conversation history.
+- Legal document question input.
+- FAISS-based document retrieval.
+- Local Llama 3.2 response generation.
 - Retrieved-document information where available.
-- Clear conversation option.
+- Answer modes: Auto, Documents only, and General.
+- Conversation regeneration and export options.
 
 ---
 
 ## 💬 Example Questions
-
-The following questions can be used to test the application.
 
 | Category | Example Question |
 |---|---|
@@ -547,19 +455,11 @@ The following questions can be used to test the application.
 
 **Case 1: Relevant legal information exists**
 
-The system retrieves matching document chunks and sends the retrieved context to Gemini.
-
-Mode:
-
-`RAG - Answer based on retrieved legal documents`
+The system retrieves matching document chunks and sends the retrieved context to Llama 3.2.
 
 **Case 2: Relevant legal information is unavailable**
 
-The system uses the general knowledge fallback.
-
-Mode:
-
-`General LLM`
+The system uses its general-knowledge fallback.
 
 General answers should not be treated as verified legal information.
 
@@ -568,8 +468,6 @@ General answers should not be treated as verified legal information.
 ## 📊 Retrieval Evaluation
 
 The project includes an `EvaluateRetrieval.py` script for retrieval evaluation experiments.
-
-Retrieval quality is important because the final generated answer depends on the relevance of the retrieved document chunks.
 
 The following metrics are useful for evaluating a semantic retrieval system:
 
@@ -581,55 +479,43 @@ The following metrics are useful for evaluating a semantic retrieval system:
 | Mean Average Precision (MAP) | Measures ranking quality across multiple queries. |
 | Normalized Discounted Cumulative Gain (NDCG) | Measures ranking quality while considering relevance and position. |
 
-These metrics are suggested evaluation criteria; their actual implementation and numerical results should be reported only after inspecting and running the evaluation script.
-
-A future evaluation should compare different chunk sizes, overlap values, embedding models, and retrieval configurations.
+Numerical evaluation results should be reported only after executing the evaluation script on the labelled dataset.
 
 ---
 
 ## 📸 Screenshots
 
-Add application screenshots here after finalizing the interface.
+Add application screenshots after finalizing the interface.
 
 ### 1. NyayaAI Home Page
 
-```markdown
 ![NyayaAI Home Page](screenshots/home.png)
-```
 
 ### 2. Legal Document Question Answering
 
-```markdown
 ![Legal Question Answering](screenshots/legal-query.png)
-```
 
 ### 3. General Knowledge Fallback
 
-```markdown
 ![General Knowledge Response](screenshots/general-query.png)
-```
 
 ### 4. Retrieved Document Sources
 
-```markdown
 ![Retrieved Sources](screenshots/retrieved-sources.png)
-```
 
-Create a `screenshots/` directory in the repository and add the corresponding images before publishing.
+Create a `screenshots/` directory and add the corresponding images before publishing.
 
 ---
 
 ## ⚠️ Limitations
 
-The current project has several areas that require further improvement:
-
 1. **Document Coverage:** The current knowledge base does not necessarily cover the entire Indian judicial system.
-2. **Retrieval Accuracy:** Semantic similarity alone cannot guarantee that retrieved documents contain sufficient evidence to answer a question.
+2. **Retrieval Accuracy:** Semantic similarity alone cannot guarantee that retrieved documents contain sufficient evidence.
 3. **Relevance Threshold:** The retrieval threshold requires calibration using a representative evaluation dataset.
 4. **Legal Interpretation:** AI-generated explanations may omit important legal details or misinterpret complex provisions.
-5. **Document Quality:** Scanned PDFs, poor formatting, and extraction errors may affect retrieval quality.
+5. **Document Quality:** Scanned PDFs, poor formatting and extraction errors may affect retrieval quality.
 6. **General Knowledge Responses:** Fallback answers are not verified against the legal document database.
-7. **API Dependency:** Gemini-based generation depends on API availability, network connectivity, and applicable usage limits.
+7. **Local Hardware Dependency:** Running Llama 3.2 locally requires sufficient system resources.
 
 ---
 
@@ -643,7 +529,7 @@ Potential improvements include:
 - Integrate a cross-encoder reranker.
 - Improve document-aware and structure-aware chunking.
 - Develop an evidence-sufficiency classifier.
-- Improve source citations with document names, page numbers, and relevant passages.
+- Improve source citations with document names, page numbers and relevant passages.
 - Support multilingual legal queries.
 - Add legal document summarization.
 - Implement user authentication and conversation management.
@@ -657,13 +543,13 @@ Potential improvements include:
 
 NyayaAI explores the application of modern Natural Language Processing and Large Language Models to legal information retrieval.
 
-The project combines several important concepts:
+The project combines:
 
 1. **Information Retrieval:** Finding relevant legal documents from a large document collection.
 2. **Semantic Search:** Retrieving information based on meaning rather than exact keyword matches.
 3. **Vector Databases:** Storing and searching document embeddings efficiently.
 4. **Retrieval-Augmented Generation:** Grounding generated answers in retrieved external documents.
-5. **LLM Integration:** Using Gemini for natural-language answer generation.
+5. **Local LLM Integration:** Using Ollama and Llama 3.2 for natural-language answer generation.
 6. **Retrieval Evaluation:** Studying the quality of retrieved information.
 
 The project demonstrates how RAG-based systems can be applied to domain-specific knowledge bases such as the Indian judicial system.
@@ -676,7 +562,7 @@ NyayaAI is an academic and research project developed for educational purposes.
 
 It is intended to assist with legal document discovery and provide informational explanations.
 
-It does not replace professional legal advice, legal consultation, or official judicial records.
+It does not replace professional legal advice, legal consultation or official judicial records.
 
 Users should independently verify important legal information using authentic and authoritative legal sources.
 
@@ -704,7 +590,7 @@ Interested in:
 
 ## 🙏 Acknowledgements
 
-I would like to acknowledge the open-source communities and developers behind Python, LangChain, HuggingFace, FAISS, Streamlit, and Google Gemini for providing the technologies that make this project possible.
+I would like to acknowledge the open-source communities and developers behind Python, LangChain, HuggingFace, FAISS, Streamlit and Ollama for providing the technologies that make this project possible.
 
 **Built with the goal of making Indian legal information more accessible through AI.**
 
